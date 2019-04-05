@@ -256,7 +256,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
-    const Dtype* weights, Dtype* output, bool skip_im2col) {
+    const Dtype* weights, Dtype* output, bool skip_im2col, bool actual) {
   const Dtype* col_buff = input;
   if (!is_1x1_) {
     if (!skip_im2col) {
@@ -268,7 +268,7 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, conv_out_channels_ /
         group_, conv_out_spatial_dim_, kernel_dim_,
         (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)0., output + output_offset_ * g);
+        (Dtype)0., output + output_offset_ * g, actual);
   }
 }
 
@@ -277,7 +277,7 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_bias(Dtype* output,
     const Dtype* bias) {
   caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,
       out_spatial_dim_, 1, (Dtype)1., bias, bias_multiplier_.cpu_data(),
-      (Dtype)1., output);
+      (Dtype)1., output, true);
 }
 
 template <typename Dtype>
@@ -291,7 +291,7 @@ void BaseConvolutionLayer<Dtype>::backward_cpu_gemm(const Dtype* output,
     caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans, kernel_dim_,
         conv_out_spatial_dim_, conv_out_channels_ / group_,
         (Dtype)1., weights + weight_offset_ * g, output + output_offset_ * g,
-        (Dtype)0., col_buff + col_offset_ * g);
+        (Dtype)0., col_buff + col_offset_ * g, true);
   }
   if (!is_1x1_) {
     conv_col2im_cpu(col_buff, input);
@@ -310,7 +310,7 @@ void BaseConvolutionLayer<Dtype>::weight_cpu_gemm(const Dtype* input,
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasTrans, conv_out_channels_ / group_,
         kernel_dim_, conv_out_spatial_dim_,
         (Dtype)1., output + output_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)1., weights + weight_offset_ * g);
+        (Dtype)1., weights + weight_offset_ * g, true);
   }
 }
 

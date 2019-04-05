@@ -38,7 +38,7 @@ class PythonLayer : public Layer<Dtype> {
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+      const vector<Blob<Dtype>*>& top, bool actual) {
     self_.attr("forward")(bottom, top);
   }
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,

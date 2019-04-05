@@ -45,7 +45,7 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void EltwiseLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top, bool actual) {
   int* mask = NULL;
   const Dtype* bottom_data_a = NULL;
   const Dtype* bottom_data_b = NULL;

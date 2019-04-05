@@ -91,7 +91,7 @@ void LRNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void LRNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top, bool actual) {
   switch (this->layer_param_.lrn_param().norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
     CrossChannelForward_cpu(bottom, top);

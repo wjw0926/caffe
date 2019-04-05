@@ -55,7 +55,7 @@ void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+      const vector<Blob<Dtype>*>& top, bool actual) {
   if (bottom.size() == 1) { return; }
   Dtype* top_data = top[0]->mutable_cpu_data();
   int offset_concat_axis = 0;

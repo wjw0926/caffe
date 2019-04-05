@@ -24,7 +24,7 @@ void SplitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void SplitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+      const vector<Blob<Dtype>*>& top, bool actual) {
   for (int i = 0; i < top.size(); ++i) {
     top[i]->ShareData(*bottom[0]);
   }

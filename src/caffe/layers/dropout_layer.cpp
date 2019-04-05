@@ -29,7 +29,7 @@ void DropoutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void DropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top, bool actual) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   unsigned int* mask = rand_vec_.mutable_cpu_data();

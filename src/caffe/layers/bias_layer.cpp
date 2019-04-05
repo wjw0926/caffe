@@ -70,7 +70,7 @@ void BiasLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+      const vector<Blob<Dtype>*>& top, bool actual) {
   const Dtype* bias_data =
       ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -81,7 +81,7 @@ void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   for (int n = 0; n < outer_dim_; ++n) {
     caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, bias_dim_,
         inner_dim_, 1, Dtype(1), bias_data,
-        bias_multiplier_.cpu_data(), Dtype(1), top_data);
+        bias_multiplier_.cpu_data(), Dtype(1), top_data, actual);
     top_data += dim_;
   }
 }

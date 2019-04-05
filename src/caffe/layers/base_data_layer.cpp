@@ -111,7 +111,7 @@ void BasePrefetchingDataLayer<Dtype>::InternalThreadEntry() {
 
 template <typename Dtype>
 void BasePrefetchingDataLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top, bool actual) {
   if (prefetch_current_) {
     prefetch_free_.push(prefetch_current_);
   }

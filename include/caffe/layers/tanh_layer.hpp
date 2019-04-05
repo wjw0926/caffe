@@ -39,7 +39,7 @@ class TanHLayer : public NeuronLayer<Dtype> {
    *      @f$
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      const vector<Blob<Dtype>*>& top, bool actual);
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 

@@ -46,7 +46,7 @@ class MemoryDataLayer : public BaseDataLayer<Dtype> {
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      const vector<Blob<Dtype>*>& top, bool actual);
 
   int batch_size_, channels_, height_, width_, size_;
   Dtype* data_;
