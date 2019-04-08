@@ -154,11 +154,11 @@ void LRNLayer<Dtype>::CrossChannelForward_cpu(
 template <typename Dtype>
 void LRNLayer<Dtype>::WithinChannelForward(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  split_layer_->Forward(bottom, split_top_vec_);
-  square_layer_->Forward(square_bottom_vec_, square_top_vec_);
-  pool_layer_->Forward(square_top_vec_, pool_top_vec_);
-  power_layer_->Forward(pool_top_vec_, power_top_vec_);
-  product_layer_->Forward(product_bottom_vec_, top);
+  split_layer_->Forward(bottom, split_top_vec_, true);
+  square_layer_->Forward(square_bottom_vec_, square_top_vec_, true);
+  pool_layer_->Forward(square_top_vec_, pool_top_vec_, true);
+  power_layer_->Forward(pool_top_vec_, power_top_vec_, true);
+  product_layer_->Forward(product_bottom_vec_, top, true);
 }
 
 template <typename Dtype>

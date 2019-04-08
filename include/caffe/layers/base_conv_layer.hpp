@@ -34,7 +34,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   // we just called weight_cpu_gemm with the same input.
   void forward_cpu_gemm(const Dtype* input, const Dtype* weights,
       Dtype* output, bool skip_im2col = false, bool actual = true);
-  void forward_cpu_bias(Dtype* output, const Dtype* bias);
+  void forward_cpu_bias(Dtype* output, const Dtype* bias, bool actual = true);
   void backward_cpu_gemm(const Dtype* input, const Dtype* weights,
       Dtype* output);
   void weight_cpu_gemm(const Dtype* input, const Dtype* output, Dtype*

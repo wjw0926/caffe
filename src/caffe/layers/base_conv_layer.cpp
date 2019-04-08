@@ -258,7 +258,7 @@ template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     const Dtype* weights, Dtype* output, bool skip_im2col, bool actual) {
   const Dtype* col_buff = input;
-  if (!is_1x1_) {
+  if (!is_1x1_ && actual) {
     if (!skip_im2col) {
       conv_im2col_cpu(input, col_buffer_.mutable_cpu_data());
     }
@@ -274,10 +274,10 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
 
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_bias(Dtype* output,
-    const Dtype* bias) {
+    const Dtype* bias, bool actual) {
   caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,
       out_spatial_dim_, 1, (Dtype)1., bias, bias_multiplier_.cpu_data(),
-      (Dtype)1., output, true);
+      (Dtype)1., output, actual);
 }
 
 template <typename Dtype>

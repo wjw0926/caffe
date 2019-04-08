@@ -124,7 +124,7 @@ class Layer {
    * Your layer should implement Forward_cpu and (optionally) Forward_gpu.
    */
   inline Dtype Forward(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+      const vector<Blob<Dtype>*>& top, bool actual);
 
   /**
    * @brief Given the top blob error gradients, compute the bottom blob error
@@ -308,7 +308,7 @@ class Layer {
 
   /** @brief Using the CPU device, compute the layer output. */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) = 0;
+      const vector<Blob<Dtype>*>& top, bool actual) = 0;
   /**
    * @brief Using the GPU device, compute the layer output.
    *        Fall back to Forward_cpu() if unavailable.
@@ -316,7 +316,7 @@ class Layer {
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
     // LOG(WARNING) << "Using CPU code as backup.";
-    return Forward_cpu(bottom, top);
+    return Forward_cpu(bottom, top, true);
   }
 
   /**
@@ -411,12 +411,13 @@ class Layer {
 // functions.
 template <typename Dtype>
 inline Dtype Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top, bool actual) {
   Dtype loss = 0;
   Reshape(bottom, top);
   switch (Caffe::mode()) {
   case Caffe::CPU:
-    Forward_cpu(bottom, top);
+    Forward_cpu(bottom, top, false);
+    Forward_cpu(bottom, top, actual);
     for (int top_id = 0; top_id < top.size(); ++top_id) {
       if (!this->loss(top_id)) { continue; }
       const int count = top[top_id]->count();

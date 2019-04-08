@@ -89,7 +89,7 @@ void DummyDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     }
   }
   // Run Forward once, with refill_ inverted, to fill the constant Blobs.
-  this->Forward(bottom, top);
+  this->Forward(bottom, top, true);
   // Invert the inverted refill_ values to refill the desired (non-constant)
   // Blobs in every usual forward pass.
   for (int i = 0; i < refill_.size(); ++i) {
