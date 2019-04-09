@@ -22,13 +22,14 @@ transformer.set_transpose('data', (2,0,1))
 transformer.set_channel_swap('data', (2,1,0))
 transformer.set_raw_scale('data', 255.0)
 
-#note we can change the batch size on-the-fly
-#since we classify only one image, we change batch size from 10 to 1
-net.blobs['data'].reshape(1,3,227,227)
-
 #load the image in the data layer
 im = caffe.io.load_image('examples/images/cat.jpg')
-net.blobs['data'].data[...] = transformer.preprocess('data', im)
+for name in net.blobs.keys():
+    print name,
+    print net.blobs[name].data.shape
+
+for i in range(10):
+    net.blobs['data'].data[i,:,:,:] = transformer.preprocess('data', im)
 
 #compute
 start = time.time()
