@@ -5,7 +5,7 @@
 #include <fcntl.h>
 
 int NUM_ADDRS = 14;
-int NUM_SLOTS = 30000;
+int NUM_SLOTS = 50000;
 size_t CAFFE_SIZE = 4194304;
 
 /* Busy wait for a given cycle */

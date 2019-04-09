@@ -258,7 +258,7 @@ template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     const Dtype* weights, Dtype* output, bool skip_im2col, bool actual) {
   const Dtype* col_buff = input;
-  if (!is_1x1_ && actual) {
+  if (!is_1x1_) {
     if (!skip_im2col) {
       conv_im2col_cpu(input, col_buffer_.mutable_cpu_data());
     }

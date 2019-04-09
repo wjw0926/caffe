@@ -19,7 +19,7 @@ with open(inputfile, 'rb') as f:
     while True:
         line = f.readline()
         if not line: break
-        
+
         m = relu.match(line)
         if m:
             result.write(extract_offset(line))
@@ -29,17 +29,17 @@ with open(inputfile, 'rb') as f:
         if m:
             result.write(extract_offset(line))
             continue
-        
+
         m = lrn.match(line)
         if m:
             result.write(extract_offset(line))
             continue
-        
+
         m = dropout.match(line)
         if m:
             result.write(extract_offset(line))
             continue
-        
+
         m = softmax.match(line)
         if m:
             result.write(extract_offset(line))
@@ -49,7 +49,7 @@ with open(inputfile, 'rb') as f:
         if m:
             result.write(extract_offset(line))
             continue
-        
+
         m = pool.match(line)
         if m:
             result.write(extract_offset(line))

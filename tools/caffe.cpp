@@ -379,7 +379,7 @@ int time() {
     forward_timer.Start();
     for (int i = 0; i < layers.size(); ++i) {
       timer.Start();
-      layers[i]->Forward(bottom_vecs[i], top_vecs[i]);
+      layers[i]->Forward(bottom_vecs[i], top_vecs[i], true);
       forward_time_per_layer[i] += timer.MicroSeconds();
     }
     forward_time += forward_timer.MicroSeconds();

@@ -94,10 +94,10 @@ void LRNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top, bool actual) {
   switch (this->layer_param_.lrn_param().norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
-    CrossChannelForward_cpu(bottom, top);
+    CrossChannelForward_cpu(bottom, top, actual);
     break;
   case LRNParameter_NormRegion_WITHIN_CHANNEL:
-    WithinChannelForward(bottom, top);
+    WithinChannelForward(bottom, top, actual);
     break;
   default:
     LOG(FATAL) << "Unknown normalization region.";
@@ -106,7 +106,7 @@ void LRNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void LRNLayer<Dtype>::CrossChannelForward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top, bool actual) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   Dtype* scale_data = scale_.mutable_cpu_data();
@@ -153,12 +153,12 @@ void LRNLayer<Dtype>::CrossChannelForward_cpu(
 
 template <typename Dtype>
 void LRNLayer<Dtype>::WithinChannelForward(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  split_layer_->Forward(bottom, split_top_vec_, true);
-  square_layer_->Forward(square_bottom_vec_, square_top_vec_, true);
-  pool_layer_->Forward(square_top_vec_, pool_top_vec_, true);
-  power_layer_->Forward(pool_top_vec_, power_top_vec_, true);
-  product_layer_->Forward(product_bottom_vec_, top, true);
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top, bool actual) {
+  split_layer_->Forward(bottom, split_top_vec_, actual);
+  square_layer_->Forward(square_bottom_vec_, square_top_vec_, actual);
+  pool_layer_->Forward(square_top_vec_, pool_top_vec_, actual);
+  power_layer_->Forward(pool_top_vec_, power_top_vec_, actual);
+  product_layer_->Forward(product_bottom_vec_, top, actual);
 }
 
 template <typename Dtype>

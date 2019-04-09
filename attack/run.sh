@@ -12,7 +12,7 @@ python test.py &
 cd -
 VICTIM_PID=$!
 
-sleep 2
+sleep 2.1
 
 ./attack ${CAFFE} ${OFFSET} ${CYCLE} &
 ATTACK_PID=$!
