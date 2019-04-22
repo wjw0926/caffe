@@ -22,27 +22,29 @@ transformer.set_transpose('data', (2,0,1))
 transformer.set_channel_swap('data', (2,1,0))
 transformer.set_raw_scale('data', 255.0)
 
-#load the image in the data layer
-im = caffe.io.load_image('examples/images/cat.jpg')
-for name in net.blobs.keys():
-    print name,
-    print net.blobs[name].data.shape
-
-for i in range(10):
-    net.blobs['data'].data[i,:,:,:] = transformer.preprocess('data', im)
+#load the images in the data layer
+batch_size = 10
+im_cat       = caffe.io.load_image('examples/images/cat.jpg')
+im_fish_bike = caffe.io.load_image('examples/images/fish-bike.jpg')
 
 #compute
 start = time.time()
-out = net.forward()
+out = net.forward_all(data=np.asarray([transformer.preprocess('data', im_cat),
+                                       transformer.preprocess('data', im_cat),
+                                       transformer.preprocess('data', im_cat),
+                                       transformer.preprocess('data', im_cat),
+                                       transformer.preprocess('data', im_cat),
+                                       transformer.preprocess('data', im_fish_bike),
+                                       transformer.preprocess('data', im_fish_bike),
+                                       transformer.preprocess('data', im_fish_bike),
+                                       transformer.preprocess('data', im_fish_bike),
+                                       transformer.preprocess('data', im_fish_bike)]))
 end = time.time()
 duration = end - start
 print ("Wait {0} seconds".format(duration))
-#out = net.forward_all(data=np.asarray([transformer.preprocess('data', im)]))
-
-#predicted predicted class
-print out['prob'].argmax()
 
 #print predicted labels
 labels = np.loadtxt("data/ilsvrc12/synset_words.txt", str, delimiter='\t')
-top_k = net.blobs['prob'].data[0].flatten().argsort()[-1:-6:-1]
-print labels[top_k]
+for i in range(batch_size):
+    top_k = net.blobs['prob'].data[i].flatten().argsort()[-1:-2:-1]
+    print labels[top_k]
