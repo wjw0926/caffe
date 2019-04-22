@@ -140,14 +140,14 @@ class Net {
    *        need this unless you do per-layer checks such as gradients.
    */
   inline const vector<vector<Blob<Dtype>*> >& bottom_vecs() const {
-    return bottom_vecs_;
+    return bottom_vecs_[0];
   }
   /**
    * @brief returns the top vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
   inline const vector<vector<Blob<Dtype>*> >& top_vecs() const {
-    return top_vecs_;
+    return top_vecs_[0];
   }
   /// @brief returns the ids of the top blobs of layer i
   inline const vector<int> & top_ids(int i) const {
@@ -290,11 +290,11 @@ class Net {
   /// bottom_vecs stores the vectors containing the input for each layer.
   /// They don't actually host the blobs (blobs_ does), so we simply store
   /// pointers.
-  vector<vector<Blob<Dtype>*> > bottom_vecs_;
+  vector<vector<vector<Blob<Dtype>*> > > bottom_vecs_;
   vector<vector<int> > bottom_id_vecs_;
   vector<vector<bool> > bottom_need_backward_;
   /// top_vecs stores the vectors containing the output for each layer
-  vector<vector<Blob<Dtype>*> > top_vecs_;
+  vector<vector<vector<Blob<Dtype>*> > > top_vecs_;
   vector<vector<int> > top_id_vecs_;
   /// Vector of weight in the loss (or objective) function of each net blob,
   /// indexed by blob_id.
