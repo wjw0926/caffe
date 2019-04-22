@@ -96,6 +96,15 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
          ++bottom_id) {
       const int blob_id = AppendBottom(param, layer_id, bottom_id,
                                        &available_blobs, &blob_name_to_idx);
+      if (layer_id == 1) {
+        Blob<Dtype> *half_blob = new Blob<Dtype>(bottom_vecs_[0][layer_id][0]->shape());
+        half_blob->Reshape(half_blob->shape(0) / 2,
+                           half_blob->shape(1),
+                           half_blob->shape(2),
+                           half_blob->shape(3));
+        bottom_vecs_[0][layer_id].pop_back();
+        bottom_vecs_[0][layer_id].push_back(half_blob);
+      }
       // If a blob needs backward, this layer should provide it.
       need_backward |= blob_need_backward_[blob_id];
     }
@@ -125,6 +134,8 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     }
     // After this layer is connected, set it up.
     layers_[layer_id]->SetUp(bottom_vecs_[0][layer_id], top_vecs_[0][layer_id]);
+    Blob<Dtype> *blob = new Blob<Dtype>(top_vecs_[0][layer_id][0]->shape());
+    top_vecs_[1][layer_id].push_back(blob);
     LOG_IF(INFO, Caffe::root_solver())
         << "Setting up " << layer_names_[layer_id];
     for (int top_id = 0; top_id < top_vecs_[0][layer_id].size(); ++top_id) {
@@ -412,6 +423,14 @@ int Net<Dtype>::AppendBottom(const NetParameter& param, const int layer_id,
   LOG_IF(INFO, Caffe::root_solver())
       << layer_names_[layer_id] << " <- " << blob_name;
   bottom_vecs_[0][layer_id].push_back(blobs_[blob_id].get());
+  Blob<Dtype> *blob = new Blob<Dtype>(bottom_vecs_[0][layer_id][0]->shape());
+  bottom_vecs_[1][layer_id].push_back(blob);
+  if (layer_id == 23) {
+    vector<int> orig_shape;
+    orig_shape.push_back(bottom_vecs_[0][layer_id][0]->shape(0)*2);
+    orig_shape.push_back(bottom_vecs_[0][layer_id][0]->shape(1));
+    bottom_vecs_[0][layer_id][0]->Reshape(orig_shape);
+  }
   bottom_id_vecs_[layer_id].push_back(blob_id);
   available_blobs->erase(blob_name);
   bool need_backward = blob_need_backward_[blob_id];
@@ -527,8 +546,61 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
     for (int c = 0; c < before_forward_.size(); ++c) {
       before_forward_[c]->run(i);
     }
+    // Share input image data (num = 10)
+    if (i == 0) {
+      Blob<Dtype> *top_blob = new Blob<Dtype>(top_vecs_[0][i][0]->shape());
+      top_blob->CopyFrom(*top_vecs_[0][i][0], false, false);
+      top_vecs_[1][i][0]->ShareData(*top_blob);
+    }
+    // Reduce copied input data into second half
+    else if (i == 1) {
+      Dtype* half_blob_data = static_cast<Dtype*>(top_vecs_[1][i-1][0]->mutable_cpu_data());
+      vector<int> shape = top_vecs_[1][i-1][0]->shape();
+      for (int n = shape[0]/2; n < shape[0]; n++) {
+        for (int c = 0; c < shape[1]; c++) {
+          for (int h = 0; h < shape[2]; h++) {
+            for (int w = 0; w < shape[3]; w++) {
+              int offset = ((n*shape[1]+c)*shape[2]+h)*shape[3]+w;
+              half_blob_data[offset-(shape[0]/2)*shape[1]*shape[2]*shape[3]] = half_blob_data[offset] ;
+            }
+          }
+        }
+      }
+      top_vecs_[1][i-1][0]->Reshape(shape[0]/2,
+                                    shape[1],
+                                    shape[2],
+                                    shape[3]);
+
+      top_vecs_[0][i-1][0]->Reshape(shape[0]/2,
+                                    shape[1],
+                                    shape[2],
+                                    shape[3]);
+      bottom_vecs_[0][i][0] = top_vecs_[0][i-1][0];
+    }
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[0][i], top_vecs_[0][i]);
     loss += layer_loss;
+    // Assign previous layer's output to current layer's input (pointer)
+    if (i > 0) {
+      bottom_vecs_[1][i][0] = top_vecs_[1][i-1][0];
+    }
+    layers_[i]->Forward(bottom_vecs_[1][i], top_vecs_[1][i]);
+    // Restore prob layer to original shape
+    if (i == layers_.size() - 1) {
+      vector<int> orig_shape;
+      orig_shape.push_back(top_vecs_[0][i][0]->shape(0)*2);
+      orig_shape.push_back(top_vecs_[0][i][0]->shape(1));
+      top_vecs_[0][i][0]->Reshape(orig_shape);
+
+      Dtype* prob_blob_data = static_cast<Dtype*>(top_vecs_[0][i][0]->mutable_cpu_data());
+      Dtype* second_blob_data = static_cast<Dtype*>(top_vecs_[1][i][0]->mutable_cpu_data());
+      vector<int> shape = top_vecs_[0][i][0]->shape();
+      for (int n = shape[0]/2; n < shape[0]; n++) {
+        for (int c = 0; c < shape[1]; c++) {
+          int offset = n*shape[1]+c;
+          prob_blob_data[offset] = second_blob_data[offset-(shape[0]/2)*shape[1]];
+        }
+      }
+    }
     if (debug_info_) { ForwardDebugInfo(i); }
     for (int c = 0; c < after_forward_.size(); ++c) {
       after_forward_[c]->run(i);
