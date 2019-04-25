@@ -73,7 +73,6 @@ NONGEN_CXX_SRCS := $(shell find \
 	src/$(PROJECT) \
 	include/$(PROJECT) \
 	python/$(PROJECT) \
-	matlab/+$(PROJECT)/private \
 	examples \
 	tools \
 	-name "*.cpp" -or -name "*.hpp" -or -name "*.cu" -or -name "*.cuh")
@@ -87,12 +86,6 @@ NONEMPTY_LINT_REPORT := $(BUILD_DIR)/$(LINT_EXT)
 PY$(PROJECT)_SRC := python/$(PROJECT)/_$(PROJECT).cpp
 PY$(PROJECT)_SO := python/$(PROJECT)/_$(PROJECT).so
 PY$(PROJECT)_HXX := include/$(PROJECT)/layers/python_layer.hpp
-# MAT$(PROJECT)_SRC is the mex entrance point of matlab package for $(PROJECT)
-MAT$(PROJECT)_SRC := matlab/+$(PROJECT)/private/$(PROJECT)_.cpp
-ifneq ($(MATLAB_DIR),)
-	MAT_SO_EXT := $(shell $(MATLAB_DIR)/bin/mexext)
-endif
-MAT$(PROJECT)_SO := matlab/+$(PROJECT)/private/$(PROJECT)_.$(MAT_SO_EXT)
 
 ##############################
 # Derive generated files
@@ -126,7 +119,7 @@ GTEST_OBJ := $(addprefix $(BUILD_DIR)/, ${GTEST_SRC:.cpp=.o})
 EXAMPLE_OBJS := $(addprefix $(BUILD_DIR)/, ${EXAMPLE_SRCS:.cpp=.o})
 # Output files for automatic dependency generation
 DEPS := ${CXX_OBJS:.o=.d} ${CU_OBJS:.o=.d} ${TEST_CXX_OBJS:.o=.d} \
-	${TEST_CU_OBJS:.o=.d} $(BUILD_DIR)/${MAT$(PROJECT)_SO:.$(MAT_SO_EXT)=.d}
+	${TEST_CU_OBJS:.o=.d}
 # tool, example, and test bins
 TOOL_BINS := ${TOOL_OBJS:.o=.bin}
 EXAMPLE_BINS := ${EXAMPLE_OBJS:.o=.bin}
@@ -236,7 +229,6 @@ DOXYGEN_SOURCES := $(shell find \
 	src/$(PROJECT) \
 	include/$(PROJECT) \
 	python/ \
-	matlab/ \
 	examples \
 	tools \
 	-name "*.cpp" -or -name "*.hpp" -or -name "*.cu" -or -name "*.cuh" -or \
@@ -423,8 +415,6 @@ CXXFLAGS += -MMD -MP
 COMMON_FLAGS += $(foreach includedir,$(INCLUDE_DIRS),-I$(includedir))
 CXXFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
 NVCCFLAGS += -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
-# mex may invoke an older gcc that is too liberal with -Wuninitalized
-MATLAB_CXXFLAGS := $(CXXFLAGS) -Wno-uninitialized
 LINKFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
 
 USE_PKG_CONFIG ?= 0
@@ -450,16 +440,12 @@ SUPERCLEAN_EXTS := .so .a .o .bin .testbin .pb.cc .pb.h _pb2.py .cuo
 
 # Set the sub-targets of the 'everything' target.
 EVERYTHING_TARGETS := all py$(PROJECT) test warn lint
-# Only build matcaffe as part of "everything" if MATLAB_DIR is specified.
-ifneq ($(MATLAB_DIR),)
-	EVERYTHING_TARGETS += mat$(PROJECT)
-endif
 
 ##############################
 # Define build targets
 ##############################
 .PHONY: all lib test clean docs linecount lint lintclean tools examples $(DIST_ALIASES) \
-	py mat py$(PROJECT) mat$(PROJECT) proto runtest \
+	py py$(PROJECT) proto runtest \
 	superclean supercleanlist supercleanfiles warn everything
 
 all: lib tools examples
@@ -471,7 +457,7 @@ everything: $(EVERYTHING_TARGETS)
 linecount:
 	cloc --read-lang-def=$(PROJECT).cloc \
 		src/$(PROJECT) include/$(PROJECT) tools examples \
-		python matlab
+		python
 
 lint: $(EMPTY_LINT_REPORT)
 
@@ -519,34 +505,12 @@ $(PY$(PROJECT)_SO): $(PY$(PROJECT)_SRC) $(PY$(PROJECT)_HXX) | $(DYNAMIC_NAME)
 		-o $@ $(LINKFLAGS) -l$(LIBRARY_NAME) $(PYTHON_LDFLAGS) \
 		-Wl,-rpath,$(ORIGIN)/../../build/lib
 
-mat$(PROJECT): mat
-
-mat: $(MAT$(PROJECT)_SO)
-
-$(MAT$(PROJECT)_SO): $(MAT$(PROJECT)_SRC) $(STATIC_NAME)
-	@ if [ -z "$(MATLAB_DIR)" ]; then \
-		echo "MATLAB_DIR must be specified in $(CONFIG_FILE)" \
-			"to build mat$(PROJECT)."; \
-		exit 1; \
-	fi
-	@ echo MEX $<
-	$(Q)$(MATLAB_DIR)/bin/mex $(MAT$(PROJECT)_SRC) \
-			CXX="$(CXX)" \
-			CXXFLAGS="\$$CXXFLAGS $(MATLAB_CXXFLAGS)" \
-			CXXLIBS="\$$CXXLIBS $(STATIC_LINK_COMMAND) $(LDFLAGS)" -output $@
-	@ if [ -f "$(PROJECT)_.d" ]; then \
-		mv -f $(PROJECT)_.d $(BUILD_DIR)/${MAT$(PROJECT)_SO:.$(MAT_SO_EXT)=.d}; \
-	fi
-
 runtest: $(TEST_ALL_BIN)
 	$(TOOL_BUILD_DIR)/caffe
 	$(TEST_ALL_BIN) $(TEST_GPUID) --gtest_shuffle $(TEST_FILTER)
 
 pytest: py
 	cd python; python -m unittest discover -s caffe/test
-
-mattest: mat
-	cd matlab; $(MATLAB_DIR)/bin/matlab -nodisplay -r 'caffe.run_tests(), exit()'
 
 warn: $(EMPTY_WARN_REPORT)
 
@@ -662,7 +626,6 @@ clean:
 	@- $(RM) -rf $(BUILD_DIR_LINK)
 	@- $(RM) -rf $(DISTRIBUTE_DIR)
 	@- $(RM) $(PY$(PROJECT)_SO)
-	@- $(RM) $(MAT$(PROJECT)_SO)
 
 supercleanfiles:
 	$(eval SUPERCLEAN_FILES := $(strip \
