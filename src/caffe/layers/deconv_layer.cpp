@@ -33,7 +33,7 @@ void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           top_data + n * this->top_dim_);
       if (this->bias_term_) {
         const Dtype* bias = this->blobs_[1]->cpu_data();
-        this->forward_cpu_bias(top_data + n * this->top_dim_, bias);
+        this->forward_cpu_bias(actual, top_data + n * this->top_dim_, bias);
       }
     }
   }
@@ -65,7 +65,7 @@ void DeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         // Gradient w.r.t. bottom data, if necessary, reusing the column buffer
         // we might have just computed above.
         if (propagate_down[i]) {
-          this->forward_cpu_gemm(top_diff + n * this->top_dim_, weight,
+          this->forward_cpu_gemm(true, top_diff + n * this->top_dim_, weight,
               bottom_diff + n * this->bottom_dim_,
               this->param_propagate_down_[0]);
         }

@@ -255,8 +255,8 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
-    const Dtype* weights, Dtype* output, bool skip_im2col, bool actual) {
+void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(bool actual, const Dtype* input,
+    const Dtype* weights, Dtype* output, bool skip_im2col) {
   const Dtype* col_buff = input;
   if (!is_1x1_) {
     if (!skip_im2col) {
@@ -265,19 +265,19 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     col_buff = col_buffer_.cpu_data();
   }
   for (int g = 0; g < group_; ++g) {
-    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, conv_out_channels_ /
+    caffe_cpu_gemm<Dtype>(actual, CblasNoTrans, CblasNoTrans, conv_out_channels_ /
         group_, conv_out_spatial_dim_, kernel_dim_,
         (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)0., output + output_offset_ * g, actual);
+        (Dtype)0., output + output_offset_ * g);
   }
 }
 
 template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::forward_cpu_bias(Dtype* output,
-    const Dtype* bias, bool actual) {
-  caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num_output_,
+void BaseConvolutionLayer<Dtype>::forward_cpu_bias(bool actual, Dtype* output,
+    const Dtype* bias) {
+  caffe_cpu_gemm<Dtype>(actual, CblasNoTrans, CblasNoTrans, num_output_,
       out_spatial_dim_, 1, (Dtype)1., bias, bias_multiplier_.cpu_data(),
-      (Dtype)1., output, actual);
+      (Dtype)1., output);
 }
 
 template <typename Dtype>
@@ -288,10 +288,10 @@ void BaseConvolutionLayer<Dtype>::backward_cpu_gemm(const Dtype* output,
     col_buff = input;
   }
   for (int g = 0; g < group_; ++g) {
-    caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans, kernel_dim_,
+    caffe_cpu_gemm<Dtype>(true, CblasTrans, CblasNoTrans, kernel_dim_,
         conv_out_spatial_dim_, conv_out_channels_ / group_,
         (Dtype)1., weights + weight_offset_ * g, output + output_offset_ * g,
-        (Dtype)0., col_buff + col_offset_ * g, true);
+        (Dtype)0., col_buff + col_offset_ * g);
   }
   if (!is_1x1_) {
     conv_col2im_cpu(col_buff, input);
@@ -307,10 +307,10 @@ void BaseConvolutionLayer<Dtype>::weight_cpu_gemm(const Dtype* input,
     col_buff = col_buffer_.cpu_data();
   }
   for (int g = 0; g < group_; ++g) {
-    caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasTrans, conv_out_channels_ / group_,
+    caffe_cpu_gemm<Dtype>(true, CblasNoTrans, CblasTrans, conv_out_channels_ / group_,
         kernel_dim_, conv_out_spatial_dim_,
         (Dtype)1., output + output_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)1., weights + weight_offset_ * g, true);
+        (Dtype)1., weights + weight_offset_ * g);
   }
 }
 

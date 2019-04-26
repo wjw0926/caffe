@@ -15,10 +15,10 @@ namespace caffe {
 // Caffe gemm provides a simpler interface to the gemm functions, with the
 // limitation that the data has to be contiguous in memory.
 template <typename Dtype>
-void caffe_cpu_gemm(const CBLAS_TRANSPOSE TransA,
+void caffe_cpu_gemm(bool actual, const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const Dtype alpha, const Dtype* A, const Dtype* B, const Dtype beta,
-    Dtype* C, bool actual);
+    Dtype* C);
 
 template <typename Dtype>
 void caffe_cpu_gemv(const CBLAS_TRANSPOSE TransA, const int M, const int N,

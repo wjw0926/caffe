@@ -523,11 +523,13 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
     for (int c = 0; c < before_forward_.size(); ++c) {
       before_forward_[c]->run(i);
     }
-    int r = rand() % (end - start) + start;
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i], true);
     printf("Real: %s\n", layers_[i].get()->type());
-    layers_[r]->Forward(bottom_vecs_[r], top_vecs_[r], false);
-    printf("Fake: %s\n", layers_[r].get()->type());
+    if (i % 3 == 0) {
+      int r = rand() % (end - start) + start;
+      layers_[r]->Forward(bottom_vecs_[r], top_vecs_[r], false);
+      printf("Fake: %s\n", layers_[r].get()->type());
+    }
 
     loss += layer_loss;
     if (debug_info_) { ForwardDebugInfo(i); }

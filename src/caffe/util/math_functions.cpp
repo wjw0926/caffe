@@ -10,10 +10,10 @@
 namespace caffe {
 
 template<>
-void caffe_cpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
+void caffe_cpu_gemm<float>(bool actual, const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const float alpha, const float* A, const float* B, const float beta,
-    float* C, bool actual) {
+    float* C) {
   int lda = (TransA == CblasNoTrans) ? K : M;
   int ldb = (TransB == CblasNoTrans) ? N : K;
   if (actual) {
@@ -23,10 +23,10 @@ void caffe_cpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
 }
 
 template<>
-void caffe_cpu_gemm<double>(const CBLAS_TRANSPOSE TransA,
+void caffe_cpu_gemm<double>(bool actual, const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const double alpha, const double* A, const double* B, const double beta,
-    double* C, bool actual) {
+    double* C) {
   int lda = (TransA == CblasNoTrans) ? K : M;
   int ldb = (TransB == CblasNoTrans) ? N : K;
   if (actual) {
