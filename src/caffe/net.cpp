@@ -120,7 +120,13 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       }
     }
     // After this layer is connected, set it up.
+    if (layer_id > 0) {
+      std::cout << "(SB) " << layers_[layer_id]->type() << " layer: " << bottom_vecs_[layer_id][0]->shape_string() << " -> " << top_vecs_[layer_id][0]->shape_string() << std::endl;
+    }
     layers_[layer_id]->SetUp(bottom_vecs_[layer_id], top_vecs_[layer_id]);
+    if (layer_id > 0) {
+      std::cout << "(SA) " << layers_[layer_id]->type() << " layer: " << bottom_vecs_[layer_id][0]->shape_string() << " -> " << top_vecs_[layer_id][0]->shape_string() << std::endl;
+    }
     LOG_IF(INFO, Caffe::root_solver())
         << "Setting up " << layer_names_[layer_id];
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
@@ -523,7 +529,14 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
     for (int c = 0; c < before_forward_.size(); ++c) {
       before_forward_[c]->run(i);
     }
+    if (i > 0) {
+      std::cout << "(FB) " << layers_[i]->type() << " layer: " << bottom_vecs_[i][0]->shape_string() << " -> " << top_vecs_[i][0]->shape_string() << std::endl;
+    }
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i]);
+    if (i > 0) {
+      std::cout << "(FA) " << layers_[i]->type() << " layer: " << bottom_vecs_[i][0]->shape_string() << " -> " << top_vecs_[i][0]->shape_string() << std::endl;
+    }
+    std::cout << "=============================================================" << std::endl;
     loss += layer_loss;
     if (debug_info_) { ForwardDebugInfo(i); }
     for (int c = 0; c < after_forward_.size(); ++c) {

@@ -97,3 +97,8 @@ LOCK
 LOG*
 CURRENT
 MANIFEST-*
+
+# Inference tool
+test.py
+o_test.py
+run.sh
