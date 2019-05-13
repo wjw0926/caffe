@@ -102,3 +102,8 @@ MANIFEST-*
 test.py
 o_test.py
 run.sh
+
+# Obfuscator files
+obfuscator/*.prototxt
+obfuscator/*.caffemodel
+obfuscator/*/*.npy
