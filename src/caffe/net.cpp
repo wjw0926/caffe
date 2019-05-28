@@ -524,11 +524,12 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
       before_forward_[c]->run(i);
     }
     Dtype layer_loss = layers_[i]->Forward(bottom_vecs_[i], top_vecs_[i], true);
-    printf("Real: %s\n", layers_[i].get()->type());
-    if (i % 3 == 0) {
-      int r = rand() % (end - start) + start;
+    printf("(R) %s\n", layers_[i].get()->type());
+    if (!strncmp(layers_[i].get()->type(), "ReLU", 8)) {
+      //int r = rand() % (end - start) + start;
+      int r = 31; // 31 for pooling, 29 for convolution
       layers_[r]->Forward(bottom_vecs_[r], top_vecs_[r], false);
-      printf("Fake: %s\n", layers_[r].get()->type());
+      printf("Fake==%s\n", layers_[r].get()->type());
     }
 
     loss += layer_loss;
