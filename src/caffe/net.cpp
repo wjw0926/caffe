@@ -425,7 +425,7 @@ int Net<Dtype>::AppendBottom(const NetParameter& param, const int layer_id,
   bottom_vecs_[0][layer_id].push_back(blobs_[blob_id].get());
   Blob<Dtype> *blob = new Blob<Dtype>(bottom_vecs_[0][layer_id][0]->shape());
   bottom_vecs_[1][layer_id].push_back(blob);
-  if (layer_id == 23) {
+  if (layer_id == 39) {
     vector<int> orig_shape;
     orig_shape.push_back(bottom_vecs_[0][layer_id][0]->shape(0)*2);
     orig_shape.push_back(bottom_vecs_[0][layer_id][0]->shape(1));
