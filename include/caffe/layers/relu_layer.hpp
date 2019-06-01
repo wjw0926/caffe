@@ -26,6 +26,8 @@ class ReLULayer : public NeuronLayer<Dtype> {
    */
   explicit ReLULayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "ReLU"; }
 
@@ -78,6 +80,8 @@ class ReLULayer : public NeuronLayer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+
+  unsigned int num_;
 };
 
 }  // namespace caffe
