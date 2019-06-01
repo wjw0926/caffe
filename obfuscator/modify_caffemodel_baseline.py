@@ -3,12 +3,12 @@ import numpy as np
 import argparse
 import os
 
-original_model = "../models/vgg-16/deploy.prototxt"
-original_weights = "../models/vgg-16/VGG_ILSVRC_16_layers.caffemodel"
-obfuscated_model = "o_deploy.prototxt"
+model = "../models/vgg-16/deploy.prototxt"
+weights = "../models/vgg-16/VGG_ILSVRC_16_layers.caffemodel"
+o_model = "o_deploy_baseline.prototxt"
 
 caffe.set_mode_cpu()
-original_net = caffe.Net(original_model, 1, weights=original_weights)
+original_net = caffe.Net(model, 1, weights=weights)
 
 # Enlarging an array: missing entries are filled with zeros
 conv1_1_w = original_net.params['conv1_1'][0].data
@@ -81,27 +81,27 @@ fc6_w = original_net.params['fc6'][0].data
 fc6_b = original_net.params['fc6'][1].data
 o_fc6_w = fc6_w.copy() # (4096, 25088)
 o_fc6_b = fc6_b.copy() # (4096,)
-o_fc6_w.resize((8192, 25088))
-o_fc6_b.resize((8192,))
+o_fc6_w.resize((6000, 25088))
+o_fc6_b.resize((6000,))
 
 fc7_w = original_net.params['fc7'][0].data
 fc7_b = original_net.params['fc7'][1].data
 o_fc7_w = fc7_w.copy() # (4096, 4096)
 o_fc7_b = fc7_b.copy() # (4096,)
-w = np.zeros((4096, 4096), dtype=float)
-o_fc7_w = np.concatenate((o_fc7_w, w), axis=1) # (4096, 8192)
-o_fc7_w.resize((8192, 8192))
-o_fc7_b.resize((8192,))
+w = np.zeros((4096, 1904), dtype=float)
+o_fc7_w = np.concatenate((o_fc7_w, w), axis=1) # (4096, 6000)
+o_fc7_w.resize((6000, 6000))
+o_fc7_b.resize((6000,))
 
 fc8_w = original_net.params['fc8'][0].data
 fc8_b = original_net.params['fc8'][1].data
 o_fc8_w = fc8_w.copy() # (1000, 4096)
 o_fc8_b = fc8_b.copy() # (1000,)
-t = np.zeros((1000, 4096), dtype=float)
-o_fc8_w = np.concatenate((o_fc8_w, t), axis=1) # (1000, 8192)
+t = np.zeros((1000, 1904), dtype=float)
+o_fc8_w = np.concatenate((o_fc8_w, t), axis=1) # (1000, 6000)
 
 # Save obfuscated weights
-obfuscated_net = caffe.Net(obfuscated_model, 1, weights=original_weights)
+obfuscated_net = caffe.Net(o_model, 1, weights=weights)
 
 obfuscated_net.params['o_conv1_1'][0].data[...] = o_conv1_1_w
 obfuscated_net.params['o_conv1_1'][1].data[...] = o_conv1_1_b
@@ -126,4 +126,4 @@ obfuscated_net.params['o_fc7'][1].data[...] = o_fc7_b
 obfuscated_net.params['o_fc8'][0].data[...] = o_fc8_w
 obfuscated_net.params['o_fc8'][1].data[...] = o_fc8_b
 
-obfuscated_net.save('O_VGG_ILSVRC_16_layers.caffemodel')
+obfuscated_net.save('O_VGG_ILSVRC_16_layers_baseline.caffemodel')
