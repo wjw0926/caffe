@@ -20,7 +20,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int count = bottom[0]->count();
   Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
   if (num_ == 1) {
-    for (int i = 0; i < count/8; ++i) {
+    for (int i = 0; i < count/2; ++i) {
       top_data[i] = std::max(bottom_data[i], Dtype(0))
           + negative_slope * std::min(bottom_data[i], Dtype(0));
     }
@@ -35,12 +35,9 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
   else if (num_ == 3) {
-    for (int i = 0; i < 256; ++i) {
-      for (int j = 224*84; j < 224*140; ++j) {
-        int m = i*j;
-        top_data[m] = std::max(bottom_data[m], Dtype(0))
-            + negative_slope * std::min(bottom_data[m], Dtype(0));
-      }
+    for (int i = 0; i < count/2; ++i) {
+      top_data[i] = std::max(bottom_data[i], Dtype(0))
+          + negative_slope * std::min(bottom_data[i], Dtype(0));
     }
   }
   else if (num_ == 4) {
